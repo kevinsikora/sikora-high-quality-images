@@ -40,13 +40,7 @@ The plugin works as soon as it's activated. There's nothing to configure.
 
 ### Existing images
 
-The plugin only affects images that are **generated after activation**. Thumbnails and resized copies that already exist keep their original compression. To rebuild them at the new quality, regenerate thumbnails with WP-CLI:
-
-```bash
-wp media regenerate --yes
-```
-
-A plugin such as [Regenerate Thumbnails](https://wordpress.org/plugins/regenerate-thumbnails/) does the same job from the admin.
+The plugin only affects images that are **generated after activation**. Thumbnails and resized copies that already exist keep their original compression.
 
 ## Things to Consider
 
