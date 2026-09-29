@@ -1,81 +1,73 @@
-# Sikora High Quality Images (Optimization)
+# Sikora Image Quality
 
-A lightweight WordPress plugin that makes WordPress save the image files it generates at maximum quality (100).
+Control the quality WordPress uses when it generates and saves images, with separate settings for JPEG and the WordPress image editor.
 
-By default, WordPress re-compresses every resized image it creates (thumbnails, medium, large, and so on) at a quality of **82**. That default favours smaller files, but it can leave visible compression artifacts, especially on photography, gradients, and detailed artwork. This plugin raises the quality to **100** for all generated images.
+**License:** [GNU General Public License v2.0 or later](https://www.gnu.org/licenses/gpl-2.0.html)
 
-## Features
+> For GitHub. Plugin documentation source of truth: [`readme.txt`](readme.txt).
 
-- Sets the quality of generated JPEG images to 100.
-- Sets the quality of every format handled by `WP_Image_Editor` (JPEG, WebP, AVIF, and PNG) to 100.
-- Applies during upload, when intermediate sizes are created, and when images are edited in the Media Library.
-- Has no settings, no database writes, and no front-end output.
+## Description
 
-## How It Works
+When you upload an image, WordPress creates multiple resized copies (thumbnail, medium, large, and other sizes). WordPress compresses those files using a default quality of **82**. That favors smaller files, but it can cause visible compression artifacts. Higher values preserve detail but use more disk space and bandwidth.
 
-The plugin hooks into two WordPress filters, both at priority `99`, so it runs after most other plugins and themes that change image quality:
+### Why these settings are needed
 
-| Filter | Purpose |
-| --- | --- |
-| `wp_editor_set_quality` | Sets the quality for all image formats that `WP_Image_Editor` (GD or Imagick) processes. |
-| `jpeg_quality` | A JPEG-specific fallback that catches cases `wp_editor_set_quality` might miss. |
+WordPress's default may not match your site. Photography and portfolio sites often need higher quality. Sites with limited storage may prefer lower values. This plugin lets you set the quality WordPress uses without writing custom code.
 
-Both callbacks return `100`, the highest value available.
+### What the plugin does
+
+It adds **Settings → Sikora Image Quality** with two sections:
+
+- **JPEG Quality** — quality for generated JPEG images. Affects JPEG (.jpg, .jpeg) only.
+- **WordPress Editor Quality** — quality when WordPress's image editor saves images. Affects JPEG, WebP, AVIF (WordPress 6.5+ when your server supports it), and PNG. PNG is lossless, so the quality value has little or no visual effect.
+
+In each section you get:
+
+- A quality slider and number field kept in sync (integers **1–100**). Plugin default: **100**. WordPress default shown on screen: **82**.
+- A filter priority slider and number field kept in sync (integers **1–999**). Plugin default: **99**. WordPress default shown on screen: **10**.
+
+### What filter priority does
+
+WordPress runs filters in priority order. Lower numbers run earlier; higher numbers run later. A later callback can override an earlier one. WordPress's default priority is **10**. This plugin defaults to **99** so its quality settings usually apply even if another plugin or theme also changes image quality. Lower the priority if you want another plugin to take precedence.
+
+Your settings apply only to images generated or re-saved after you save them. Existing thumbnails are not changed automatically. Uninstalling the plugin removes its settings from the database.
 
 ## Installation
 
-### Manual upload
+1. Upload the `sikora-image-quality` folder to `/wp-content/plugins/`, or install the zip via **Plugins → Add New → Upload Plugin**.
+2. Activate **Sikora Image Quality** on the **Plugins** screen.
+3. Open **Settings → Sikora Image Quality** and set your quality and filter priority values.
 
-1. Create a folder named `sikora-high-quality-images` in `wp-content/plugins/`.
-2. Put the plugin PHP file in that folder.
-3. In the WordPress admin, go to **Plugins** and activate **Sikora High Quality Images (Optimization)**.
+## Frequently Asked Questions
 
-### As a must-use plugin (optional)
+### Why change image quality?
 
-To keep the plugin always active so it can't be turned off from the admin, put the PHP file directly in `wp-content/mu-plugins/`.
+WordPress defaults to **82**. Raise it for more detail, or lower it for smaller files.
 
-## Usage
+### What does filter priority do?
 
-The plugin works as soon as it's activated. There's nothing to configure.
+It controls whether this plugin's quality values run before or after other plugins that change the same settings. Use a higher value (such as **99**) if another plugin is overriding you.
 
-### Existing images
+### Which file formats are affected?
 
-The plugin only affects images that are **generated after activation**. Thumbnails and resized copies that already exist keep their original compression.
+- **JPEG Quality:** JPEG (.jpg, .jpeg) only.
+- **WordPress Editor Quality:** JPEG, WebP, AVIF (when supported), and PNG.
 
-## Things to Consider
+### Will existing images change?
 
-- **Larger files:** Quality 100 files can be much larger than those saved at WordPress's default of 82. This affects disk usage, backup size, and page weight. Consider pairing the plugin with a CDN or an image-optimization service that serves responsive, compressed variants.
-- **Disk usage and uploads:** Each upload creates several generated sizes, and at quality 100 each one takes more space and slightly longer to encode. On sites where many users can upload media (such as multi-author sites or membership sites), storage can fill up faster than expected. Limit upload permissions to trusted roles, set upload size limits, and keep an eye on disk space. You can also unregister image sizes your theme doesn't use to reduce how many files each upload creates.
-- **Lossless formats:** PNG is lossless, so a quality setting has little or no visual effect on it. How the value is used depends on the image editor library (GD or Imagick) on your server.
-- **AVIF support:** WordPress core supports AVIF from version 6.5. Your server's GD or Imagick build also needs AVIF support.
-- **Conflicts:** Other plugins or themes that hook the same filters at a priority above `99` will override this plugin.
-
-## Customization
-
-To use a different quality level, change the value returned by both functions:
-
-```php
-function sikora_set_jpeg_quality( $quality, $context ) {
-    return 90;
-}
-
-function sikora_set_wp_editor_quality( $quality, $mime_type = null ) {
-    return 90;
-}
-```
-
-## Requirements
-
-- WordPress 5.0 or later (6.5 or later for AVIF)
-- PHP 7.0 or later
-- The GD or Imagick PHP extension
+No. Only new or re-saved generated images use the new settings.
 
 ## Changelog
 
-### 2.0.0
-- Added the `wp_editor_set_quality` filter, which applies maximum quality to JPEG, WebP, AVIF, and PNG.
-- Kept the `jpeg_quality` filter as a JPEG-specific fallback.
+### 3.0.0
 
-## Author
+- Settings screen with JPEG Quality and WordPress Editor Quality sections.
+- Synced quality controls (1–100, default 100) and filter priority controls (1–999, default 99).
+- Shows WordPress defaults (quality 82, filter priority 10) and which file types each setting affects.
+- Removes plugin settings from the database on uninstall.
 
-Developed by [Sikora Collective](https://sikoracollective.com/).
+## Upgrade Notice
+
+### 3.0.0
+
+New settings screen for JPEG and editor quality. Review **Settings → Sikora Image Quality** after upgrading.
