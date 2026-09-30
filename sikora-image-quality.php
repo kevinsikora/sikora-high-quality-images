@@ -1,44 +1,51 @@
 <?php
 /**
- * Plugin Name: Sikora High Quality Images (Optimization)
- * Description: Sets WordPress generated image sizes to use maximum image quality.
- * Version: 2.0.0
- * Author: <a href="https://sikoracollective.com/">Sikora Collective</a>
+ * Plugin Name: Sikora Image Quality
+ * Description: Set JPEG and WordPress image editor quality values and filter priorities when WordPress generates images.
+ * Version: 3.0.0
+ * Requires at least: 5.0
+ * Requires PHP: 7.0
+ * Author: Sikora Collective
+ * Author URI: https://sikoracollective.com/
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: sikora-image-quality
+ *
+ * @package SikoraImageQuality
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
-/**
- * Set JPEG image quality to 100.
- *
- * Runs when WordPress creates resized JPEG images during upload
- * and when JPEG images are edited/saved.
- * 
- * This is needed to handle cases that could be missed by
- * the wp_editor_set_quality filter. 
- *
- * @param int    $quality Current JPEG quality.
- * @param string $context Context, such as image_resize or edit_image.
- * @return int
- */
-function sikora_set_jpeg_quality( $quality, $context ) {
-    return 100;     // 100 is the highest value
-}
-add_filter( 'jpeg_quality', 'sikora_set_jpeg_quality', 99, 2 );
+/** Plugin version. */
+define( 'SIKORA_IQ_PLUGIN_VERSION', '3.0.0' );
+
+/** Absolute path to the main plugin file. */
+define( 'SIKORA_IQ_PLUGIN_FILE', __FILE__ );
+
+require_once __DIR__ . '/includes/options.php';
+require_once __DIR__ . '/includes/filters.php';
+require_once __DIR__ . '/includes/admin-page.php';
 
 /**
- * Set image editor quality to 100 for all formats handled by WP_Image_Editor.
- *
- * Applies to JPEG, WebP, AVIF, and PNG images processed through
- * the WordPress image editor during upload, resizing, and editing.
- *
- * @param int         $quality   Current image quality.
- * @param string|null $mime_type Image mime type (e.g. image/jpeg, image/webp).
- * @return int
+ * Set default quality and priority options on first activation.
  */
- function sikora_set_wp_editor_quality( $quality, $mime_type = null ) {
-    return 100;     // 100 is the highest value
+function sikora_iq_activate_plugin() {
+	if ( false === get_option( SIKORA_IQ_OPTION_JPEG_QUALITY, false ) ) {
+		add_option( SIKORA_IQ_OPTION_JPEG_QUALITY, SIKORA_IQ_DEFAULT_QUALITY );
+	}
+
+	if ( false === get_option( SIKORA_IQ_OPTION_EDITOR_QUALITY, false ) ) {
+		add_option( SIKORA_IQ_OPTION_EDITOR_QUALITY, SIKORA_IQ_DEFAULT_QUALITY );
+	}
+
+	if ( false === get_option( SIKORA_IQ_OPTION_JPEG_PRIORITY, false ) ) {
+		add_option( SIKORA_IQ_OPTION_JPEG_PRIORITY, SIKORA_IQ_DEFAULT_FILTER_PRIORITY );
+	}
+
+	if ( false === get_option( SIKORA_IQ_OPTION_EDITOR_PRIORITY, false ) ) {
+		add_option( SIKORA_IQ_OPTION_EDITOR_PRIORITY, SIKORA_IQ_DEFAULT_FILTER_PRIORITY );
+	}
 }
-add_filter( 'wp_editor_set_quality', 'sikora_set_wp_editor_quality', 99, 2 );
+register_activation_hook( SIKORA_IQ_PLUGIN_FILE, 'sikora_iq_activate_plugin' );
