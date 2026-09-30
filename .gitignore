@@ -1,6 +1,5 @@
 # Build and release artifacts
 /build/
-*.zip
 
 # OS
 .DS_Store
