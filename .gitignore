@@ -1,0 +1,14 @@
+# Build and release artifacts
+/build/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors / IDE
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
